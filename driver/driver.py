@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 import sys
 import os
+from time import sleep
 
 import click
 import serial
@@ -11,8 +14,7 @@ class CommandException(Exception):
 
 def open_serial(device):
     try:
-        log.info("Opening %s" % device)
-        return serial.Serial(device,
+        ser = serial.Serial(device,
             BAUD_RATE,
             bytesize=serial.EIGHTBITS,
             parity=serial.PARITY_NONE,
@@ -22,11 +24,46 @@ def open_serial(device):
         print("Failed to open serial port %s" % device, str(err))
         return None
 
+    print("wait until shit warms up...")
+    sleep(3)
+
+    while True:
+        if not ser.in_waiting:
+            break
+
+        ser.read()
+
+    return ser
+
+
+def dump(s):
+    for ch in s:
+        print("%d" % ord(ch))
+    print()
+
+
+def readline(ser):
+
+    while True:
+        resp = ser.readline().decode('utf-8')
+        resp = resp.replace("\n", "")
+        resp = resp.replace("\r", "")
+        if not resp:
+            continue
+
+        break
+
+    return resp
+
+
 def send_cmd(ser, cmd):
-    ser.write(cmd)
-    resp = ser.read()
+    cmd += "\n"
+    ser.write(bytes(cmd, 'utf-8'))
+    resp = readline(ser)
     if resp != "ok":
+        print("'%s'" % resp)
         raise CommandException(resp)
+
 
 
 @click.command()
@@ -37,11 +74,13 @@ def main(device):
     if not ser:
         return
 
+    print("opened serial port")
+
     try:
         send_cmd(ser, "$H")
-        send_cmd(ser, "G0 X10 Y0")
-        send_cmd(ser, "G0 X10 Y10")
-        send_cmd(ser, "G0 X0 Y10")
+        send_cmd(ser, "G0 X40 Y0")
+        send_cmd(ser, "G0 X40 Y40")
+        send_cmd(ser, "G0 X0 Y40")
         send_cmd(ser, "G0 X0 Y0")
 
     except CommandException as err:
