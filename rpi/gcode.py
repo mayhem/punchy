@@ -16,5 +16,16 @@ grbl.cnect("/dev/ttyAMA0", 115200)
 grbl.poll_start()
 
 sleep(2)
+print("unlock!")
+grbl.send_immediately("$X")
+
+# Home
+#grbl.send_immediately("$H")
+
+sleep(2)
 print("move!")
-grbl.send_immediately("G0 X200")
+
+# Set mm, feed rate
+grbl.stream("G21F100")
+#grbl.stream("G0X-20Y-20")
+grbl.stream("G0X20Y20")

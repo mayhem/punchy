@@ -1,0 +1,3 @@
+gerbil@git+https://github.com/mayhem/gerbil.git@master
+gcode_machine@git+https://github.com/michaelfranzl/gcode_machine.git@master
+pillow
